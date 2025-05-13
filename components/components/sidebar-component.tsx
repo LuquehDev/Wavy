@@ -28,7 +28,7 @@ export default function SideBar() {
     return (
         <aside className="flex flex-col justify-between min-h-screen w-64 bg-card text-foreground border-r">
             <div className="p-6">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-2 mb-6">
                     <Image src="/logo.png" alt="Logo" width={40} height={40} />
                     <span className="text-xl font-semibold tracking-tight">Wavy</span>
                 </div>
@@ -38,6 +38,7 @@ export default function SideBar() {
                             key={item.label}
                             href={item.href}
                             className="flex items-center gap-3 px-3 py-2 text-sm font-medium hover:bg-muted transition-colors"
+                            style={{ borderRadius: "0.3rem" }}
                         >
                             {item.icon}
                             {item.label}
@@ -47,19 +48,22 @@ export default function SideBar() {
                 <Separator className="my-4" />
                 <div className="flex flex-col gap-2">
                     <Popover>
-                        <PopoverTrigger>
-                            <Button variant="outline" className="w-full justify-start cursor-pointer border-dashed">
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start cursor-pointer border-dashed " style={{ borderRadius: "0.3rem" }}>
                                 <Plus className="w-4 h-4 mr-2" />
                                 Criar Playlist
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent>
-                            <div className="p-4">
-                                <input
-                                    type="text"
-                                    placeholder="Nome da Playlist"
-                                    className="w-full p-2 border rounded-md"
-                                />
+                        <PopoverContent side="right">
+                            <div className="flex flex-col p-4 gap-4">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-md font-semibold" htmlFor="input">Nome da playlist</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Funk do RJ"
+                                        className="w-full p-2 border"
+                                    />
+                                </div>
                                 <Button className="mt-2 w-full">Criar</Button>
                             </div>
                         </PopoverContent>
@@ -69,6 +73,7 @@ export default function SideBar() {
                             key={i}
                             href={`/playlist/${encodeURIComponent(playlist)}`}
                             className="text-sm text-muted-foreground hover:text-foreground px-2 py-1 hover:bg-muted transition-colors"
+                            style={{ borderRadius: "0.3rem" }}
                         >
                             {playlist}
                         </Link>
