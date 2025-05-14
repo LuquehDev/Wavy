@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Home, Search, Library, Plus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
     Popover,
@@ -78,16 +77,6 @@ export default function SideBar() {
                             {playlist}
                         </Link>
                     ))}
-                </div>
-            </div>
-
-            <div className="p-6">
-                <div className="flex items-center gap-3">
-                    <Avatar>
-                        <AvatarImage src="/logo.png" alt="Avatar" />
-                        <AvatarFallback>LP</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">Luiz Paiva</span>
                 </div>
             </div>
         </aside>
