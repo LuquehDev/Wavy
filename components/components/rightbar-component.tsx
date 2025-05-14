@@ -22,6 +22,8 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
+  SensorOptions,
+  SensorDescriptor,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -103,14 +105,13 @@ export default function RightBar() {
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
     if (active.id !== over?.id) {
-      const oldIndex = queue.findIndex((item) => item.id === active.id);
-      const newIndex = queue.findIndex((item) => item.id === over.id);
+      const oldIndex: number = queue.findIndex((item) => item.id === active.id);
+      const newIndex: number = queue.findIndex((item) => item.id === over.id);
       setQueue(arrayMove(queue, oldIndex, newIndex));
     }
   };
 
-  // Dinâmica da letra expandida
-  const [lyricsHeight, setLyricsHeight] = useState("12rem"); // mais comprimido
+  const [lyricsHeight, setLyricsHeight] = useState("12rem");
 
   useEffect(() => {
     setLyricsHeight(lyricsExpanded ? "100%" : "12rem");
@@ -122,7 +123,6 @@ export default function RightBar() {
       <div className="min-h-32 overflow-auto">
         <h2 className="text-lg font-semibold mb-4">Fila</h2>
         <DndContext
-          id="fila"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
@@ -295,18 +295,17 @@ export default function RightBar() {
                   </TooltipProvider>
                 </div>
 
-              <div className="flex items-center gap-1 h-auto justify-between w-full">
-                <p className="text-xs text-muted-foreground">00:00</p>
-                <Slider
-                  className="w-full my-4"
-                  value={progress}
-                  onValueChange={setProgress}
-                  max={100}
-                  step={1}
-                />
-                <p className="text-xs text-muted-foreground">03:45</p>
-                
-              </div>
+                <div className="flex items-center gap-1 h-auto justify-between w-full">
+                  <p className="text-xs text-muted-foreground">00:00</p>
+                  <Slider
+                    className="w-full my-4"
+                    value={progress}
+                    onValueChange={setProgress}
+                    max={100}
+                    step={1}
+                  />
+                  <p className="text-xs text-muted-foreground">03:45</p>
+                </div>
                 <div className="flex justify-between gap-2">
                   <TooltipProvider>
                     <Tooltip>
