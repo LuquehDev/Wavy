@@ -32,18 +32,22 @@ import { CSS } from "@dnd-kit/utilities"
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
 import { Slider } from "@/components/ui/slider"
 import dynamic from "next/dynamic"
-
-const SortableQueue = dynamic(() => import("@/components/components/sortableQueue"), { ssr: false })
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const initialQueue = [
-    { id: "1", title: "Música 1", artist: "Artista A" },
-    { id: "2", title: "Música 2", artist: "Artista B" },
-    { id: "3", title: "Música 3", artist: "Artista C" },
-    { id: "4", title: "Música 4", artist: "Artista D" },
-    { id: "5", title: "Música 4", artist: "Artista D" },
-    { id: "6", title: "Música 4", artist: "Artista D" },
-    { id: "7", title: "Música 4", artist: "Artista D" },
-    { id: "8", title: "Música 4", artist: "Artista D" },
+    { id: "1", title: "Shape of You", artist: "Ed Sheeran" },
+    { id: "2", title: "Blinding Lights", artist: "The Weeknd" },
+    { id: "3", title: "Levitating", artist: "Dua Lipa" },
+    { id: "4", title: "Watermelon Sugar", artist: "Harry Styles" },
+    { id: "5", title: "Peaches", artist: "Justin Bieber" },
+    { id: "6", title: "Bad Guy", artist: "Billie Eilish" },
+    { id: "7", title: "Dance Monkey", artist: "Tones and I" },
+    { id: "8", title: "Senhorita", artist: "Shawn Mendes & Camila Cabello" },
 ]
 
 function SortableItem({ item }: { item: { id: string; title: string; artist: string } }) {
@@ -65,7 +69,7 @@ function SortableItem({ item }: { item: { id: string; title: string; artist: str
         <div
             ref={setNodeRef}
             style={style}
-            className="flex justify-between items-center text-sm text-muted-foreground hover:bg-muted px-3 py-2 rounded-md group"
+            className="flex justify-between items-center text-sm text-muted-foreground hover:text-white hover:bg-muted px-3 py-2 rounded-md group"
         >
             <div>
                 <p className="font-medium">{item.title}</p>
@@ -112,7 +116,6 @@ export default function RightBar() {
             {/* Fila */}
             <div className="max-h-82 overflow-auto">
                 <h2 className="text-lg font-semibold mb-4">Fila</h2>
-                <SortableQueue queue={queue} onQueueChange={setQueue} />
                 <DndContext
                     id="fila"
                     sensors={sensors}
@@ -136,7 +139,7 @@ export default function RightBar() {
                 <h2 className="text-lg font-semibold mb-4">Tocando agora</h2>
                 <div className="flex flex-col items-center text-center">
                     <Image
-                        src="/logo.png"
+                        src="/album.jpg"
                         alt="Capa do álbum"
                         width={160}
                         height={160}
@@ -158,25 +161,58 @@ export default function RightBar() {
 
                     {/* Controles */}
                     <div className="flex items-center justify-center gap-4 mt-2">
-                        <Button variant="ghost" size="icon">
-                            <SkipBack className="w-5 h-5" />
-                        </Button>
-                        <Button variant="default" size="icon" onClick={() => setIsPlaying(!isPlaying)}>
-                            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                            <SkipForward className="w-5 h-5" />
-                        </Button>
-                    </div>
-
-                    {/* Like/Add */}
-                    <div className="flex gap-2 mt-4">
-                        <Button variant="outline" size="icon">
-                            <Heart className="w-4 h-4" />
-                        </Button>
-                        <Button variant="outline" size="icon">
-                            <Plus className="w-4 h-4" />
-                        </Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="outline" size="icon">
+                                        <Heart className="w-4 h-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Like</p>
+                                </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <SkipBack className="w-5 h-5" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Previous</p>
+                                </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="default" size="icon" onClick={() => setIsPlaying(!isPlaying)}>
+                                        {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{isPlaying ? "Pause" : "Play"}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <SkipForward className="w-5 h-5" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Next</p>
+                                </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="outline" size="icon">
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Add to Playlist</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                 </div>
             </div>
