@@ -110,10 +110,10 @@ export default function RightBar() {
   };
 
   // Dinâmica da letra expandida
-  const [lyricsHeight, setLyricsHeight] = useState("3rem"); // mais comprimido
+  const [lyricsHeight, setLyricsHeight] = useState("12rem"); // mais comprimido
 
   useEffect(() => {
-    setLyricsHeight(lyricsExpanded ? "100%" : "4rem");
+    setLyricsHeight(lyricsExpanded ? "100%" : "12rem");
   }, [lyricsExpanded]);
 
   return (
@@ -181,13 +181,17 @@ export default function RightBar() {
                 </h3>
                 <p className="text-sm text-muted-foreground">Nome do Artista</p>
               </div>
-              <Slider
-                className="w-full my-4"
-                value={progress}
-                onValueChange={setProgress}
-                max={100}
-                step={1}
-              />
+              <div className="flex items-center gap-2 h-auto justify-between w-full">
+                <p className="text-xs text-muted-foreground">00:00</p>
+                <Slider
+                  className="w-full my-4"
+                  value={progress}
+                  onValueChange={setProgress}
+                  max={100}
+                  step={1}
+                />
+                <p className="text-xs text-muted-foreground">03:45</p>
+              </div>
               <div className="flex items-center justify-center gap-4 mt-2">
                 <TooltipProvider>
                   <Tooltip>
@@ -291,54 +295,59 @@ export default function RightBar() {
                   </TooltipProvider>
                 </div>
 
+              <div className="flex items-center gap-1 h-auto justify-between w-full">
+                <p className="text-xs text-muted-foreground">00:00</p>
                 <Slider
-                  className="my-2"
+                  className="w-full my-4"
                   value={progress}
                   onValueChange={setProgress}
                   max={100}
                   step={1}
                 />
+                <p className="text-xs text-muted-foreground">03:45</p>
+                
+              </div>
                 <div className="flex justify-between gap-2">
-                    <TooltipProvider>
-                        <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                            <SkipBack className="w-4 h-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                            <p>Previous</p>
-                        </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                            variant="default"
-                            size="icon"
-                            onClick={() => setIsPlaying(!isPlaying)}
-                            >
-                            {isPlaying ? (
-                                <Pause className="w-4 h-4" />
-                            ) : (
-                                <Play className="w-4 h-4" />
-                            )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                            <p>{isPlaying ? "Pause" : "Play"}</p>
-                        </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                            <SkipForward className="w-4 h-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                            <p>Next</p>
-                        </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <SkipBack className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>Previous</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="default"
+                          size="icon"
+                          onClick={() => setIsPlaying(!isPlaying)}
+                        >
+                          {isPlaying ? (
+                            <Pause className="w-4 h-4" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{isPlaying ? "Pause" : "Play"}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <SkipForward className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>Next</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </motion.div>
@@ -347,7 +356,7 @@ export default function RightBar() {
       </div>
 
       {/* Letra */}
-      <div className="flex flex-col">
+      <div className="flex flex-col overflow-auto">
         <Separator className="mb-2" />
         <div
           className="flex items-center justify-between mb-2"

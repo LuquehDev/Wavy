@@ -1,11 +1,8 @@
 "use client"
 
-import Image from "next/image"
-import { useState, useEffect } from "react"
-
 export default function InitialPage() {
   return (
-    <div className="flex w-full h-full bg-card border-l border-r rounded-2xl">
+    <div className="flex w-full h-full bg-card border-l border-r rounded-2xl p-4">
         Bom dia pae
     </div>
   )
