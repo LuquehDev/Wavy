@@ -31,7 +31,6 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
 import { Slider } from "@/components/ui/slider"
-import dynamic from "next/dynamic"
 import {
     Tooltip,
     TooltipContent,
@@ -220,10 +219,9 @@ export default function RightBar() {
             {/* Letra */}
             <div>
                 <Separator className="mb-2" />
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2" onClick={() => setLyricsExpanded(!lyricsExpanded)}>
                     <p className={!lyricsExpanded ? "text-sm font-medium transition-all duration-200" : "text-lg font-semibold transition-all duration-200"}>Letra</p>
                     <button
-                        onClick={() => setLyricsExpanded(!lyricsExpanded)}
                         className="text-muted-foreground hover:text-foreground transition-colors"
                     >
                         {lyricsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
