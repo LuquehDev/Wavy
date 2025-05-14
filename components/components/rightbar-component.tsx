@@ -75,7 +75,7 @@ function SortableItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex justify-between items-center text-sm text-muted-foreground hover:text-white hover:bg-muted px-3 py-2 rounded-md group"
+      className="flex justify-between items-center text-sm text-muted-foreground hover:text-white hover:bg-muted px-3 py-2 group"
     >
       <div>
         <p className="font-medium">{item.title}</p>
@@ -97,7 +97,7 @@ export default function RightBar() {
   const [lyricsExpanded, setLyricsExpanded] = useState(false);
   const [queue, setQueue] = useState(initialQueue);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState([25]);
+  const [progress, setProgress] = useState([0]);
   const [playerExpanded, setPlayerExpanded] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor));
@@ -118,11 +118,12 @@ export default function RightBar() {
   }, [lyricsExpanded]);
 
   return (
-    <aside className="flex flex-col justify-between overflow-hidden h-full lg:w-72 lg:min-w-72 xl:w-80 xl:min-w-80 bg-card text-foreground border-l rounded-2xl shadow-lg p-6">
+    <aside className="flex flex-col justify-between overflow-hidden min-h-full h-full lg:w-72 lg:min-w-72 xl:w-80 xl:min-w-80 text-foreground p-6">
       {/* Fila */}
       <div className="min-h-32 overflow-auto">
         <h2 className="text-lg font-semibold mb-4">Fila</h2>
         <DndContext
+          id="list"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}

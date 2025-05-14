@@ -11,7 +11,7 @@ import {
 
 
 const navItems = [
-    { label: "Início", icon: <Home className="w-5 h-5" />, href: "/" },
+    { label: "Início", icon: <Home className="w-5 h-5" />, href: "/home" },
     { label: "Buscar", icon: <Search className="w-5 h-5" />, href: "/buscar" },
     { label: "Biblioteca", icon: <Library className="w-5 h-5" />, href: "/biblioteca" },
 ];
@@ -25,7 +25,7 @@ const playlists = [
 
 export default function SideBar() {
     return (
-        <aside className="flex flex-col justify-between h-full w-64 min-w-64 bg-card text-foreground border-r rounded-2xl shadow-lg">
+        <aside className="flex flex-col justify-between h-full w-64 min-w-64 bg-black/30 text-foreground border-r shadow-lg">
             <div className="p-6">
                 <div className="flex items-center gap-2 mb-6">
                     <Image src="/logo.png" alt="Logo" width={40} height={40} />

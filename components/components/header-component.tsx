@@ -10,23 +10,29 @@ import {
 
 export function Header() {
   return (
-    <header className="flex h-16 bg-card rounded-lg border-b items-center">
-      <div className="flex w-full items-center gap-1 p-2 lg:gap-2 lg:px-4">
+    <header className="flex h-16 items-center p-2 justify-between">
+      <div className="flex w-full items-center gap-1 lg:gap-2">
         <div className="flex items-center justify-center p-2 rounded-full bg-muted/60 hover:bg-muted transition-colors duration-200 ease-in-out">
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger>
               <Avatar className="h-8 w-8 rounded-full">
                 <AvatarImage src={"/album.jpg"} alt={"Luiz Paiva"} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">LP</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <div className="flex gap-2 p-2 items-center w-full">
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage src={"/album.jpg"} alt={"Luiz Paiva"} />
+                  <AvatarFallback className="rounded-lg">LP</AvatarFallback>
+                </Avatar> 
+                <span className="text-sm font-semibold">Luiz Paiva</span>
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuItem>Team</DropdownMenuItem>
-              <DropdownMenuItem>Subscription</DropdownMenuItem>
+              <DropdownMenuItem>Details</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive">Log Out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
