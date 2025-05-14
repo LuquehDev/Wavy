@@ -1,8 +1,6 @@
-import SideBar from "@/components/components/sidebar-component";
+import InitialPage from "@/components/components/initialPage-component";
 export default function Home() {
     return (
-        <div>
-            <SideBar />
-        </div>
+    <InitialPage/>
     );
 }
