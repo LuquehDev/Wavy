@@ -12,7 +12,7 @@ import {
 
 const navItems = [
     { label: "Início", icon: <Home className="w-5 h-5" />, href: "/home" },
-    { label: "Buscar", icon: <Search className="w-5 h-5" />, href: "/buscar" },
+    { label: "Buscar", icon: <Search className="w-5 h-5" />, href: "/search" },
     { label: "Biblioteca", icon: <Library className="w-5 h-5" />, href: "/biblioteca" },
 ];
 

@@ -11,7 +11,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     >
       <LeftBar />
       <div className="flex flex-col w-full h-full">
-        <Header />
         <div className="flex h-full">
           {children}
           <RightBar />
