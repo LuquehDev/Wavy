@@ -9,13 +9,17 @@ export default function InitialPage() {
 
   useEffect(() => {
     const value = localStorage.getItem("track_history");
-    setStoredValue(value);
+    if (!value) {
+      setStoredValue(null);
+      return;
+    }
+    setStoredValue(value || null);
   }, []);
 
   return (
     <div className="flex flex-col bg-[#020202] w-full h-full p-4 gap-1 overflow-auto">
       <h1 className="text-white text-2xl font-bold mb-2">Seu Histórico</h1>
-      {(!storedValue || JSON.parse(storedValue).length === 0) ? (
+      {(!storedValue || !JSON.parse(storedValue)) ? (
         <p className="text-muted-foreground">Nenhuma música tocada ainda.</p>
       ) : (
         <ul className="grid grid-cols-2 gap-4">
