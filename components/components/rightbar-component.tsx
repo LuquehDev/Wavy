@@ -75,7 +75,7 @@ function SortableItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex justify-between items-center text-sm text-muted-foreground hover:text-white hover:bg-muted px-3 py-2 group"
+      className="flex justify-between items-center rounded-md text-sm text-muted-foreground hover:text-white hover:bg-white/10 px-3 py-2 group"
     >
       <div>
         <p className="font-medium">{item.title}</p>

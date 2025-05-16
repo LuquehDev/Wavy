@@ -36,7 +36,7 @@ export default function SideBar() {
                         <Link
                             key={item.label}
                             href={item.href}
-                            className="flex items-center rounded-md gap-3 px-3 py-2 text-sm font-medium hover:bg-muted transition-colors"
+                            className="flex items-center rounded-md gap-3 px-3 py-2 text-sm font-medium hover:bg-white/10 transition-colors"
                         >
                             {item.icon}
                             {item.label}
@@ -47,7 +47,7 @@ export default function SideBar() {
                 <div className="flex flex-col gap-2">
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start cursor-pointer border-dashed ">
+                            <Button variant="outline" className="w-full justify-start bg-transparent border-white hover:bg-primary cursor-pointer border-dashed ">
                                 <Plus className="w-4 h-4 mr-2" />
                                 Criar Playlist
                             </Button>
@@ -72,7 +72,7 @@ export default function SideBar() {
                         <Link
                             key={i}
                             href={`/playlist/${encodeURIComponent(playlist)}`}
-                            className="text-sm text-muted-foreground rounded-sm hover:text-foreground px-2 py-1 hover:bg-muted transition-colors"
+                            className="text-sm text-muted-foreground rounded-sm hover:text-foreground px-2 py-1 hover:bg-white/10 transition-colors"
                         >
                             {playlist}
                         </Link>

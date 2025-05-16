@@ -1,43 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
+import { getAccessToken } from "@/lib/wavy";
+import { NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const searchTerm = body.searchTerm;
+export async function POST(req: Request) {
+  const { searchTerm } = await req.json();
 
   if (!searchTerm) {
-    return NextResponse.json({ error: "Search term is required." }, { status: 400 });
+    return NextResponse.json({ error: "Search term is required" }, { status: 400 });
   }
+  const accessToken = await getAccessToken();
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+  };
 
-  // 1. Autenticar com o Spotify usando client credentials
-  const basic = Buffer.from(
-    `${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`
-  ).toString("base64");
+  try {
+    const trackRes = await fetch(
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchTerm)}&type=track&limit=15`,
+      { headers }
+    );
+    const trackData = await trackRes.json();
+    const tracks = trackData.tracks?.items || [];
 
-  const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${basic}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "grant_type=client_credentials",
-  });
+    const artistRes = await fetch(
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchTerm)}&type=artist&limit=4`,
+      { headers }
+    );
+    const artistData = await artistRes.json();
+    const artists = artistData.artists?.items || [];
 
-  const tokenData = await tokenRes.json();
-  const accessToken = tokenData.access_token;
-
-  // 2. Buscar músicas com base no searchTerm
-  const searchRes = await fetch(
-    `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchTerm)}&type=track&limit=15`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  const data = await searchRes.json();
-  const tracks = data.tracks.items;
-
-  // 3. Retornar a resposta
-  return NextResponse.json(tracks);
+    return NextResponse.json({ tracks, artists });
+  } catch (error) {
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+  }
 }
