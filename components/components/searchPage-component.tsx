@@ -35,12 +35,10 @@ export default function SearchPage() {
     }
   }, []);
 
-  const putToPlay = (track: any) => {
+  const handleTrackClick = (track: any) => {
     localStorage.setItem("actual_track", JSON.stringify(track));
     window.dispatchEvent(new CustomEvent("track-changed", { detail: track }));
-  };
 
-  const addToHistory = (track: any) => {
     setHistory((prev) => {
       const exists = prev.find((item) => item.id === track.id);
       if (exists) return prev;
@@ -98,7 +96,9 @@ export default function SearchPage() {
           <>
             {tracks.length > 0 && (
               <div>
-                <h1 className="text-white text-2xl font-bold mb-4">Seus resultados:</h1>
+                <h1 className="text-white text-2xl font-bold mb-4">
+                  Seus resultados:
+                </h1>
                 <ul className="grid grid-cols-1 gap-4">
                   {tracks
                     .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
@@ -129,7 +129,9 @@ export default function SearchPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => { addToHistory(track), putToPlay(track) }}
+                          onClick={() => {
+                            handleTrackClick(track);
+                          }}
                           className="absolute right-16 bg-primary hover:bg-primary/80 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                           aria-label="Play"
                         >
@@ -143,7 +145,9 @@ export default function SearchPage() {
 
             {artists.length > 0 && (
               <div>
-                <h1 className="text-white text-2xl font-bold mb-4">Artistas relacionados:</h1>
+                <h1 className="text-white text-2xl font-bold mb-4">
+                  Artistas relacionados:
+                </h1>
                 <div className="grid grid-cols-3 xl:grid-cols-5 gap-4">
                   {artists
                     .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
@@ -159,9 +163,14 @@ export default function SearchPage() {
                         />
                         <div className="flex flex-col w-full items-start">
                           <div className="flex flex-col overflow-hidden">
-                            <p className="font-semibold text-xl truncate">{artist.name}</p>
+                            <p className="font-semibold text-xl truncate">
+                              {artist.name}
+                            </p>
                             <p className="text-lg font-semibold text-muted-foreground">
-                              Artista · <span className="text-xs text-muted-foreground mt-1 italic">{artist.followers.total} seguidores</span>
+                              Artista ·{" "}
+                              <span className="text-xs text-muted-foreground mt-1 italic">
+                                {artist.followers.total} seguidores
+                              </span>
                             </p>
                           </div>
                         </div>
@@ -176,7 +185,9 @@ export default function SearchPage() {
         <div>
           <h1 className="text-white text-2xl font-bold mb-2">Seu Histórico</h1>
           {history.length === 0 ? (
-            <p className="text-muted-foreground">Nenhuma música tocada ainda.</p>
+            <p className="text-muted-foreground">
+              Nenhuma música tocada ainda.
+            </p>
           ) : (
             <ul className="grid grid-cols-2 gap-4">
               {history.map((track) => (
@@ -200,7 +211,7 @@ export default function SearchPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => putToPlay(track)}
+                    onClick={() => handleTrackClick(track)}
                     className="absolute right-4 bg-primary hover:bg-primary/80 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                     aria-label="Play"
                   >
