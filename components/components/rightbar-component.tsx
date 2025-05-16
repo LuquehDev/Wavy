@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
@@ -22,8 +22,6 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  SensorOptions,
-  SensorDescriptor,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -45,18 +43,9 @@ const initialQueue = [
   { id: "1", title: "Shape of You", artist: "Ed Sheeran" },
   { id: "2", title: "Blinding Lights", artist: "The Weeknd" },
   { id: "3", title: "Levitating", artist: "Dua Lipa" },
-  { id: "4", title: "Watermelon Sugar", artist: "Harry Styles" },
-  { id: "5", title: "Peaches", artist: "Justin Bieber" },
-  { id: "6", title: "Bad Guy", artist: "Billie Eilish" },
-  { id: "7", title: "Dance Monkey", artist: "Tones and I" },
-  { id: "8", title: "Senhorita", artist: "Shawn Mendes & Camila Cabello" },
 ];
 
-function SortableItem({
-  item,
-}: {
-  item: { id: string; title: string; artist: string };
-}) {
+function SortableItem({ item }: { item: { id: string; title: string; artist: string } }) {
   const {
     attributes,
     listeners,
@@ -93,25 +82,54 @@ function SortableItem({
   );
 }
 
-export default function RightBar() {
+function Duration({ time }: { time: number }) {
+  const totalSeconds = Math.floor(time / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const formattedTime =
+    (minutes < 10 ? "0" : "") +
+    minutes +
+    ":" +
+    (seconds < 10 ? "0" : "") +
+    seconds;
+  return (
+    <p className="text-sm text-muted-foreground group-hover:text-white ml-auto">
+      {formattedTime}
+    </p>
+  );
+}
+
+export default function RightBar({ trackId }: { trackId: string }) {
   const [lyricsExpanded, setLyricsExpanded] = useState(false);
   const [queue, setQueue] = useState(initialQueue);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState([0]);
   const [playerExpanded, setPlayerExpanded] = useState(false);
+  const [trackData, setTrackData] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
     if (active.id !== over?.id) {
-      const oldIndex: number = queue.findIndex((item) => item.id === active.id);
-      const newIndex: number = queue.findIndex((item) => item.id === over.id);
+      const oldIndex = queue.findIndex((item) => item.id === active.id);
+      const newIndex = queue.findIndex((item) => item.id === over.id);
       setQueue(arrayMove(queue, oldIndex, newIndex));
     }
   };
 
   const [lyricsHeight, setLyricsHeight] = useState("12rem");
+
+  useEffect(() => {
+    const handleTrackChange = (e: any) => {
+      const newTrack = e.detail;
+      setTrackData(newTrack);
+      console.log(JSON.stringify(newTrack))
+    };
+
+    window.addEventListener("track-changed", handleTrackChange);
+    return () => window.removeEventListener("track-changed", handleTrackChange);
+  }, []);
 
   useEffect(() => {
     setLyricsHeight(lyricsExpanded ? "100%" : "12rem");
@@ -151,152 +169,39 @@ export default function RightBar() {
         >
           <h2 className="text-lg font-semibold">Tocando agora</h2>
           <button className="text-muted-foreground text-xs hover:text-foreground">
-            {playerExpanded ? (
-              <ChevronUp size={16} />
-            ) : (
-              <ChevronDown size={16} />
-            )}
+            {playerExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
         </div>
 
         <AnimatePresence mode="wait">
-          {playerExpanded ? (
+          {trackData && (
             <motion.div
-              key="expanded"
+              key={playerExpanded ? "expanded" : "compact"}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="flex flex-col items-center text-center"
+              className={`${playerExpanded
+                ? "flex flex-col items-center text-center"
+                : "flex items-center gap-4"
+                }`}
             >
-              <Image
-                src="/album.jpg"
+              <img
+                src={trackData.album.images[1]?.url}
                 alt="Capa do álbum"
-                width={140}
-                height={140}
-                className="rounded-lg mb-4 object-cover"
+                width={playerExpanded ? 140 : 64}
+                height={playerExpanded ? 140 : 64}
+                className={playerExpanded ? "rounded-lg mb-4" : "rounded-md"}
               />
-              <div className="mb-1">
-                <h3 className="text-md font-semibold leading-tight">
-                  Nome da Música
-                </h3>
-                <p className="text-sm text-muted-foreground">Nome do Artista</p>
-              </div>
-              <div className="flex items-center gap-2 h-auto justify-between w-full">
-                <p className="text-xs text-muted-foreground">00:00</p>
-                <Slider
-                  className="w-full my-4"
-                  value={progress}
-                  onValueChange={setProgress}
-                  max={100}
-                  step={1}
-                />
-                <p className="text-xs text-muted-foreground">03:45</p>
-              </div>
-              <div className="flex items-center justify-center gap-4 mt-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon">
-                        <Heart className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Like</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <SkipBack className="w-5 h-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Previous</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="default"
-                        size="icon"
-                        onClick={() => setIsPlaying(!isPlaying)}
-                      >
-                        {isPlaying ? (
-                          <Pause className="w-5 h-5" />
-                        ) : (
-                          <Play className="w-5 h-5" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{isPlaying ? "Pause" : "Play"}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <SkipForward className="w-5 h-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Next</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon">
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Add to Playlist</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="compact"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center gap-4"
-            >
-              <Image
-                src="/album.jpg"
-                alt="Capa do álbum"
-                width={64}
-                height={64}
-                className="rounded-md object-cover"
-              />
-              <div className="flex flex-col flex-1">
-                <div className="flex justify-between items-start">
+              <div className={`${playerExpanded ? "mb-1 w-full" : "flex flex-col flex-1"}`}>
+                <div className={`${!playerExpanded ? "flex justify-between items-start" : ""}`}>
                   <div>
-                    <h3 className="text-sm font-semibold leading-tight">
-                      Nome da Música
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Nome do Artista
-                    </p>
+                    <h3 className="text-sm font-semibold leading-tight">{trackData.name}</h3>
+                    <p className="text-xs text-muted-foreground">{trackData.artists[0].name}</p>
                   </div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <Heart className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Like</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 </div>
 
-                <div className="flex items-center gap-1 h-auto justify-between w-full">
+                <div className="flex items-center gap-2 justify-between w-full">
                   <p className="text-xs text-muted-foreground">00:00</p>
                   <Slider
                     className="w-full my-4"
@@ -305,19 +210,26 @@ export default function RightBar() {
                     max={100}
                     step={1}
                   />
-                  <p className="text-xs text-muted-foreground">03:45</p>
+                  <Duration time={trackData.duration_ms} />
                 </div>
-                <div className="flex justify-between gap-2">
+
+                <div className="flex justify-center gap-2">
                   <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Heart className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent><p>Like</p></TooltipContent>
+                    </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <SkipBack className="w-4 h-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p>Previous</p>
-                      </TooltipContent>
+                      <TooltipContent><p>Previous</p></TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -326,16 +238,10 @@ export default function RightBar() {
                           size="icon"
                           onClick={() => setIsPlaying(!isPlaying)}
                         >
-                          {isPlaying ? (
-                            <Pause className="w-4 h-4" />
-                          ) : (
-                            <Play className="w-4 h-4" />
-                          )}
+                          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p>{isPlaying ? "Pause" : "Play"}</p>
-                      </TooltipContent>
+                      <TooltipContent><p>{isPlaying ? "Pause" : "Play"}</p></TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -343,9 +249,15 @@ export default function RightBar() {
                           <SkipForward className="w-4 h-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p>Next</p>
-                      </TooltipContent>
+                      <TooltipContent><p>Next</p></TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent><p>Add to a playlist</p></TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
@@ -362,55 +274,19 @@ export default function RightBar() {
           className="flex items-center justify-between mb-2"
           onClick={() => setLyricsExpanded(!lyricsExpanded)}
         >
-          <p
-            className={
-              !lyricsExpanded
-                ? "text-sm font-medium transition-all duration-200"
-                : "text-lg font-semibold transition-all duration-200"
-            }
-          >
+          <p className={`transition-all duration-200 ${lyricsExpanded ? "text-lg font-semibold" : "text-sm font-medium"}`}>
             Letra
           </p>
           <button className="text-muted-foreground hover:text-foreground transition-colors">
-            {lyricsExpanded ? (
-              <ChevronUp size={16} />
-            ) : (
-              <ChevronDown size={16} />
-            )}
+            {lyricsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
         </div>
         <div
           style={{ maxHeight: lyricsHeight }}
           className="transition-all duration-300 text-xs leading-snug text-muted-foreground overflow-y-auto"
         >
-          🎶 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
-          rhoncus quam in turpis fermentum, a bibendum nisl rutrum. Sed at diam
-          erat. Vestibulum quis quam eget tortor porttitor laoreet sit amet vel
-          leo. Curabitur nec gravida odio, in sagittis nulla. 🎶 🎶 Lorem ipsum
-          dolor sit amet, consectetur adipiscing elit. Fusce rhoncus quam in
-          turpis fermentum, a bibendum nisl rutrum. Sed at diam erat. Vestibulum
-          quis quam eget tortor porttitor laoreet sit amet vel leo. Curabitur
-          nec gravida odio, in sagittis nulla. 🎶 🎶 Lorem ipsum dolor sit amet,
-          consectetur adipiscing elit. Fusce rhoncus quam in turpis fermentum, a
-          bibendum nisl rutrum. Sed at diam erat. Vestibulum quis quam eget
-          tortor porttitor laoreet sit amet vel leo. Curabitur nec gravida odio,
-          in sagittis nulla. 🎶 🎶 Lorem ipsum dolor sit amet, consectetur
-          adipiscing elit. Fusce rhoncus quam in turpis fermentum, a bibendum
-          nisl rutrum. Sed at diam erat. Vestibulum quis quam eget tortor
-          porttitor laoreet sit amet vel leo. Curabitur nec gravida odio, in
-          sagittis nulla. 🎶 🎶 Lorem ipsum dolor sit amet, consectetur
-          adipiscing elit. Fusce rhoncus quam in turpis fermentum, a bibendum
-          nisl rutrum. Sed at diam erat. Vestibulum quis quam eget tortor
-          porttitor laoreet sit amet vel leo. Curabitur nec gravida odio, in
-          sagittis nulla. 🎶 🎶 Lorem ipsum dolor sit amet, consectetur
-          adipiscing elit. Fusce rhoncus quam in turpis fermentum, a bibendum
-          nisl rutrum. Sed at diam erat. Vestibulum quis quam eget tortor
-          porttitor laoreet sit amet vel leo. Curabitur nec gravida odio, in
-          sagittis nulla. 🎶 🎶 Lorem ipsum dolor sit amet, consectetur
-          adipiscing elit. Fusce rhoncus quam in turpis fermentum, a bibendum
-          nisl rutrum. Sed at diam erat. Vestibulum quis quam eget tortor
-          porttitor laoreet sit amet vel leo. Curabitur nec gravida odio, in
-          sagittis nulla. 🎶
+          {/* Letra placeholder */}
+          🎶 Lorem ipsum dolor sit amet... 🎶
         </div>
       </div>
     </aside>

@@ -16,6 +16,11 @@ export default function InitialPage() {
     setStoredValue(value || null);
   }, []);
 
+    const putToPlay = (track:any) => {
+    localStorage.setItem("actual_track", JSON.stringify(track));
+    window.dispatchEvent(new CustomEvent("track-changed", { detail: track }));
+  };
+
   return (
     <div className="flex flex-col bg-[#020202] w-full h-full p-4 gap-1 overflow-auto">
       <h1 className="text-white text-2xl font-bold mb-2">Seu Histórico</h1>
@@ -44,6 +49,7 @@ export default function InitialPage() {
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={() => {putToPlay(track)}}
                 className="absolute right-4 bg-primary hover:bg-primary/80 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label="Play"
               >

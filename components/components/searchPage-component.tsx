@@ -1,7 +1,7 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, act } from "react";
 import { Play, Search } from "lucide-react";
 
 function Duration({ time }: { time: number }) {
@@ -34,6 +34,11 @@ export default function SearchPage() {
       setHistory(JSON.parse(storedHistory));
     }
   }, []);
+
+  const putToPlay = (track: any) => {
+    localStorage.setItem("actual_track", JSON.stringify(track));
+    window.dispatchEvent(new CustomEvent("track-changed", { detail: track }));
+  };
 
   const addToHistory = (track: any) => {
     setHistory((prev) => {
@@ -124,7 +129,7 @@ export default function SearchPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => addToHistory(track)}
+                          onClick={() => { addToHistory(track), putToPlay(track) }}
                           className="absolute right-16 bg-primary hover:bg-primary/80 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                           aria-label="Play"
                         >
@@ -195,7 +200,7 @@ export default function SearchPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => addToHistory(track)}
+                    onClick={() => putToPlay(track)}
                     className="absolute right-4 bg-primary hover:bg-primary/80 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                     aria-label="Play"
                   >
