@@ -6,10 +6,7 @@ import { Header } from "@/components/components/header-component";
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div
-      className="flex justify-between w-full h-full"
-      style={{
-      background: "linear-gradient(135deg, #2d1850 0%, #1B102E 100%)"
-      }}
+      className="flex justify-between w-full h-full bg-[#030712]"
       suppressHydrationWarning
     >
       <LeftBar />

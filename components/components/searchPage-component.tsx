@@ -1,7 +1,7 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, act } from "react";
+import { useState, useEffect} from "react";
 import { Play, Search } from "lucide-react";
 
 function Duration({ time }: { time: number }) {
@@ -101,7 +101,7 @@ export default function SearchPage() {
                 </h1>
                 <ul className="grid grid-cols-1 gap-4">
                   {tracks
-                    .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+                    // .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
                     .map((track: any) => (
                       <li
                         key={track.id}
