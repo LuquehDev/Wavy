@@ -23,65 +23,159 @@ import {
 
 export default function Player() {
     const [playerExpanded, setPlayerExpanded] = useState(false);
-    const [trackData, setTrackData] = useState<{ album: string; name: string; img: string; artists: string; duration_ms:number } | null>(null);
+    const [trackData, setTrackData] = useState<{
+        album: string;
+        name: string;
+        artists: string;
+        duration_ms: number;
+    } | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState([0]);
-    const [player, setPlayer] = useState(undefined);
+    const [player, setPlayer] = useState<any>(undefined);
+    const [device, setDevice] = useState<string>("");
+    const [isTrackReady, setIsTrackReady] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
 
-    // useEffect(() => {
-    //     const script = document.createElement("script");
-    //     script.src = "https://sdk.scdn.co/spotify-player.js";
-    //     script.async = true;
-
-    //     document.body.appendChild(script);
-
-    //     window.onSpotifyWebPlaybackSDKReady = () => {
-
-    //         const player = new window.Spotify.Player({
-    //             name: 'Web Playback SDK',
-    //             getOAuthToken: cb => { cb(props.token); },
-    //             volume: 0.5
-    //         });
-
-    //         setPlayer(player);
-
-    //         player.addListener('ready', ({ device_id }) => {
-    //             console.log('Ready with Device ID', device_id);
-    //         });
-
-    //         player.addListener('not_ready', ({ device_id }) => {
-    //             console.log('Device ID has gone offline', device_id);
-    //         });
-
-
-    //         player.connect();
-
-    //     };
-    // }, []);
+    const refreshToken = async () => {
+        try {
+            const refreshToken = localStorage.getItem("spotify_refresh_token");
+            const response = await fetch("/api/refreshToken", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ refresh_token: refreshToken }),
+            });
+            const { access_token, expiration_time } = await response.json();
+            localStorage.setItem("spotify_access_token", access_token);
+            localStorage.setItem("spotify_token_expiration", expiration_time);
+            return access_token;
+        } catch (error) {
+            console.error("Failed to refresh token:", error);
+            window.location.href = "/login";
+            return null;
+        }
+    };
 
     useEffect(() => {
-        const handleTrackChange = (e: any) => {
+        const script = document.createElement("script");
+        script.src = "https://sdk.scdn.co/spotify-player.js";
+        script.async = true;
+        const token = localStorage.getItem("spotify_access_token");
+        document.body.appendChild(script);
+
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            const p = new window.Spotify.Player({
+                name: "Web Playback SDK",
+                getOAuthToken: (cb: any) => cb(token),
+                volume: 0.5,
+            });
+            setPlayer(p);
+
+            p.addListener("ready", ({ device_id }) => {
+                setDevice(device_id);
+            });
+            p.addListener("player_state_changed", (state: any) => {
+                if (!state) return;
+                setIsPlaying(!state.paused);
+                setProgress([(state.position / state.duration) * 100]);
+                setCurrentTime(state.position);
+            });
+            p.connect();
+        };
+    }, []);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout | null = null;
+
+        if (isPlaying && trackData) {
+            interval = setInterval(() => {
+                setCurrentTime((prev) => {
+                    const newTime = prev + 1000;
+                    const duration = trackData.duration_ms;
+
+                    if (newTime >= duration) {
+                        clearInterval(interval!);
+                        return duration;
+                    }
+
+                    // Atualiza o progresso baseado no novo tempo
+                    setProgress([(newTime / duration) * 100]);
+                    return newTime;
+                });
+            }, 1000);
+        }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isPlaying, trackData]);
+
+
+    const formatTime = (ms: number) => {
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    };
+
+    useEffect(() => {
+        const handleTrackChange = async (e: any) => {
             const newTrack = e.detail;
-            // Pegando apenas as propriedades desejadas
-            const filteredTrack = {
-                album: newTrack.album,
-                img: newTrack.img,
+            const artistNames = (newTrack.artists as any[])
+                .map((a) => a.name)
+                .join(", ");
+
+            setTrackData({
+                album: newTrack.album.images[1]?.url,
                 name: newTrack.name,
-                artists: newTrack.artists,
+                artists: artistNames,
                 duration_ms: newTrack.duration_ms,
-            };
-            setTrackData(filteredTrack);
+            });
+            setCurrentTime(0);
+            setProgress([0]);
+
+            const token = localStorage.getItem("spotify_access_token");
+            const { id } = newTrack;
+            if (!token || !device || !id) return;
+
+            await fetch(
+                `https://api.spotify.com/v1/me/player/play?device_id=${device}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ uris: [`spotify:track:${id}`] }),
+                }
+            ).catch(async (err) => {
+                const newToken = await refreshToken();
+                if (newToken) {
+                    await fetch(
+                        `https://api.spotify.com/v1/me/player/play?device_id=${device}`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Authorization: `Bearer ${newToken}`,
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ uris: [`spotify:track:${id}`] }),
+                        }
+                    );
+                }
+            });
+
+            setIsTrackReady(true);
         };
 
         window.addEventListener("track-changed", handleTrackChange);
         return () => window.removeEventListener("track-changed", handleTrackChange);
-    }, []);
+    }, [device]);
 
     return (
         <div>
             <div
                 className="flex items-center justify-between mb-4"
-                onClick={() => setPlayerExpanded(!playerExpanded)}
+                onClick={() => setPlayerExpanded((v) => !v)}
             >
                 <h2 className="text-lg font-semibold">Tocando agora</h2>
                 <button className="text-muted-foreground text-xs hover:text-foreground">
@@ -97,28 +191,39 @@ export default function Player() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.3 }}
-                        className={`${playerExpanded
-                            ? "flex flex-col items-center text-center"
-                            : "flex items-center gap-4"
-                            }`}
+                        className={
+                            playerExpanded
+                                ? "flex flex-col items-center text-center"
+                                : "flex items-center gap-4"
+                        }
                     >
                         <img
-                            src={trackData.album.images[1]?.url}
+                            src={trackData.album}
                             alt="Capa do álbum"
                             width={playerExpanded ? 140 : 64}
                             height={playerExpanded ? 140 : 64}
                             className={playerExpanded ? "rounded-lg mb-4" : "rounded-md"}
                         />
-                        <div className={`${playerExpanded ? "mb-1 w-full" : "flex flex-col flex-1"}`}>
-                            <div className={`${!playerExpanded ? "flex justify-between items-start" : ""}`}>
+                        <div
+                            className={
+                                playerExpanded ? "mb-1 w-full" : "flex flex-col flex-1"
+                            }
+                        >
+                            <div
+                                className={!playerExpanded ? "flex justify-between items-start" : ""}
+                            >
                                 <div>
-                                    <h3 className="text-sm font-semibold leading-tight">{trackData.name}</h3>
-                                    <p className="text-xs text-muted-foreground">{trackData.name}</p>
+                                    <h3 className="text-sm font-semibold leading-tight">
+                                        {trackData.name}
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground">
+                                        {trackData.artists}
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-2 justify-between w-full">
-                                <p className="text-xs text-muted-foreground">00:00</p>
+                                <p className="text-xs text-muted-foreground">{formatTime(currentTime)}</p>
                                 <Slider
                                     className="w-full my-4"
                                     value={progress}
@@ -136,30 +241,38 @@ export default function Player() {
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button variant="ghost" size="icon">
-                                                <Heart className="w-4 h-4" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent><p>Like</p></TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon">
                                                 <SkipBack className="w-4 h-4" />
                                             </Button>
                                         </TooltipTrigger>
-                                        <TooltipContent><p>Previous</p></TooltipContent>
+                                        <TooltipContent>
+                                            <p>Previous</p>
+                                        </TooltipContent>
                                     </Tooltip>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button
                                                 variant="default"
                                                 size="icon"
-                                                onClick={() => setIsPlaying(!isPlaying)}
+                                                onClick={async () => {
+                                                    if (!player || !isTrackReady) return;
+                                                    try {
+                                                        await player.togglePlay();
+                                                    } catch {
+                                                        const newToken = await refreshToken();
+                                                        if (newToken) await player.togglePlay();
+                                                    }
+                                                }}
                                             >
-                                                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                                                {isPlaying ? (
+                                                    <Pause className="w-4 h-4" />
+                                                ) : (
+                                                    <Play className="w-4 h-4" />
+                                                )}
                                             </Button>
                                         </TooltipTrigger>
-                                        <TooltipContent><p>{isPlaying ? "Pause" : "Play"}</p></TooltipContent>
+                                        <TooltipContent>
+                                            <p>{isPlaying ? "Pause" : "Play"}</p>
+                                        </TooltipContent>
                                     </Tooltip>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -167,7 +280,9 @@ export default function Player() {
                                                 <SkipForward className="w-4 h-4" />
                                             </Button>
                                         </TooltipTrigger>
-                                        <TooltipContent><p>Next</p></TooltipContent>
+                                        <TooltipContent>
+                                            <p>Next</p>
+                                        </TooltipContent>
                                     </Tooltip>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -175,7 +290,9 @@ export default function Player() {
                                                 <Plus className="w-4 h-4" />
                                             </Button>
                                         </TooltipTrigger>
-                                        <TooltipContent><p>Add to a playlist</p></TooltipContent>
+                                        <TooltipContent>
+                                            <p>Add to a playlist</p>
+                                        </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                             </div>
