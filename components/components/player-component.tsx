@@ -22,19 +22,24 @@ import {
 } from "lucide-react";
 
 export default function Player() {
-    const [playerExpanded, setPlayerExpanded] = useState(false);
-    const [trackData, setTrackData] = useState<{
-        album: string;
-        name: string;
-        artists: string;
-        duration_ms: number;
-    } | null>(null);
+    const [playerExpanded, setPlayerExpanded] = useState(true);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState([0]);
     const [player, setPlayer] = useState<any>(undefined);
     const [device, setDevice] = useState<string>("");
     const [isTrackReady, setIsTrackReady] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
+    const [trackData, setTrackData] = useState<{
+        album: string;
+        name: string;
+        artists: string;
+        duration_ms: number;
+    } | null>(null);
+
+    useEffect(() => {
+        const token = localStorage.getItem("spotify_access_token");
+        if (!token) window.location.href = "/";
+    }, [])
 
     const refreshToken = async () => {
         try {
@@ -50,7 +55,7 @@ export default function Player() {
             return access_token;
         } catch (error) {
             console.error("Failed to refresh token:", error);
-            window.location.href = "/login";
+            window.location.href = "/";
             return null;
         }
     };
@@ -66,11 +71,12 @@ export default function Player() {
             const p = new window.Spotify.Player({
                 name: "Web Playback SDK",
                 getOAuthToken: (cb: any) => cb(token),
-                volume: 0.5,
+                volume: 0.2,
             });
+
             setPlayer(p);
 
-            p.addListener("ready", ({ device_id }) => {
+            p.addListener("ready", ({ device_id }: any) => {
                 setDevice(device_id);
             });
             p.addListener("player_state_changed", (state: any) => {
@@ -94,10 +100,10 @@ export default function Player() {
 
                     if (newTime >= duration) {
                         clearInterval(interval!);
+                        setProgress([100]);
                         return duration;
                     }
 
-                    // Atualiza o progresso baseado no novo tempo
                     setProgress([(newTime / duration) * 100]);
                     return newTime;
                 });
@@ -109,6 +115,19 @@ export default function Player() {
         };
     }, [isPlaying, trackData]);
 
+    const handleSliderChange = async (value: number[]) => {
+        if (!trackData || !player) return;
+        const percent = value[0];
+        const newTime = Math.floor((percent / 100) * trackData.duration_ms);
+        setCurrentTime(newTime);
+        setProgress([percent]);
+        try {
+            await player.seek(newTime);
+        } catch {
+            const newToken = await refreshToken();
+            if (newToken) await player.seek(newTime);
+        }
+    };
 
     const formatTime = (ms: number) => {
         const totalSeconds = Math.floor(ms / 1000);
@@ -125,7 +144,7 @@ export default function Player() {
                 .join(", ");
 
             setTrackData({
-                album: newTrack.album.images[1]?.url,
+                album: newTrack.album?.images[1]?.url,
                 name: newTrack.name,
                 artists: artistNames,
                 duration_ms: newTrack.duration_ms,
@@ -227,7 +246,7 @@ export default function Player() {
                                 <Slider
                                     className="w-full my-4"
                                     value={progress}
-                                    onValueChange={setProgress}
+                                    onValueChange={handleSliderChange}
                                     max={100}
                                     step={1}
                                 />
@@ -238,6 +257,16 @@ export default function Player() {
 
                             <div className="flex justify-center gap-2">
                                 <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <Heart className="w-4 h-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Like</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button variant="ghost" size="icon">

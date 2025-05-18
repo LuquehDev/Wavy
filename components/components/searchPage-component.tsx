@@ -1,8 +1,9 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { Play, Search } from "lucide-react";
+import Historico from "@/components/components/history-component";
 
 function Duration({ time }: { time: number }) {
   const totalSeconds = Math.floor(time / 1000);
@@ -32,18 +33,38 @@ export default function SearchPage() {
     const storedHistory = localStorage.getItem("track_history");
     if (storedHistory) {
       setHistory(JSON.parse(storedHistory));
+      window.dispatchEvent(new CustomEvent("track-history-changed", { detail: storedHistory }));
     }
   }, []);
+
+  // useEffect(() => {
+  //     localStorage.removeItem("track_history");
+
+  // },[])
 
   const handleTrackClick = (track: any) => {
     localStorage.setItem("actual_track", JSON.stringify(track));
     window.dispatchEvent(new CustomEvent("track-changed", { detail: track }));
 
     setHistory((prev) => {
-      const exists = prev.find((item) => item.id === track.id);
-      if (exists) return prev;
-
       const updated = [track, ...prev].slice(0, 6);
+      const exists = prev.find((item) => item.id === track.id);
+      if (exists) {
+        if (prev === exists[0]) {
+          return prev;
+        }
+        else {
+          const idx = prev.findIndex((item) => item.id === track.id);
+          if (idx > 0) {
+            const reordered = [prev[idx], ...prev.slice(0, idx), ...prev.slice(idx + 1)];
+            const updated = reordered.slice(0, 6);
+            localStorage.setItem("track_history", JSON.stringify(updated));
+            window.dispatchEvent(new CustomEvent("track-history-changed", { detail: updated }));
+            return updated;
+          }
+        }
+        return prev;
+      };
       localStorage.setItem("track_history", JSON.stringify(updated));
       return updated;
     });
@@ -183,44 +204,7 @@ export default function SearchPage() {
         )}
 
         <div>
-          <h1 className="text-white text-2xl font-bold mb-2">Seu Histórico</h1>
-          {history.length === 0 ? (
-            <p className="text-muted-foreground">
-              Nenhuma música tocada ainda.
-            </p>
-          ) : (
-            <ul className="grid grid-cols-2 gap-4">
-              {history.map((track) => (
-                <li
-                  key={track.id}
-                  className="flex items-center overflow-hidden gap-2 bg-transparent hover:bg-white/5 hover:shadow-lg rounded pr-3 relative group transition-shadow"
-                >
-                  <div>
-                    <img
-                      src={track.album.images[1]?.url}
-                      alt={track.name}
-                      className="w-20 h-20 object-cover rounded"
-                    />
-                  </div>
-                  <div className="max-w-[80%] overflow-hidden">
-                    <p className="font-semibold">{track.name}</p>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {track.artists[0].name}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleTrackClick(track)}
-                    className="absolute right-4 bg-primary hover:bg-primary/80 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label="Play"
-                  >
-                    <Play className="w-4 h-4" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
+          <Historico/>
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 import React from "react";
 import LeftBar from "@/components/components/leftbar-component";
 import RightBar from "@/components/components/rightbar-component";
-import { Header } from "@/components/components/header-component";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
